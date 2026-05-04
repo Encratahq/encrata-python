@@ -4,6 +4,10 @@ from .client import Encrata, FIELDS
 from .types import (
     BreachInfo,
     BreachReport,
+    ContactList,
+    Monitor,
+    MonitorRun,
+    MonitorSnapshot,
     NewsArticle,
     Person,
     Publication,
@@ -21,7 +25,7 @@ from .exceptions import (
     RateLimitError,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = [
     # Client
@@ -36,6 +40,10 @@ __all__ = [
     "Publication",
     "RegisteredServices",
     "Validation",
+    "Monitor",
+    "MonitorRun",
+    "MonitorSnapshot",
+    "ContactList",
     # Exceptions
     "EncrataError",
     "AuthenticationError",

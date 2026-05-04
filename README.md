@@ -81,7 +81,99 @@ print(report.services)      # ["Adobe", "LinkedIn", "Dropbox"]
 print(report.exposed_data)  # ["email", "password", "username"]
 ```
 
-### Handling exceptions
+## Monitoring
+
+Set up monitors to track changes in email intelligence over time. When a person changes jobs, gets a new title, or appears in a breach — you'll know.
+
+### Create a monitor
+
+```python
+monitor = client.create_monitor(
+    "Sales Leads",
+    emails=["ceo@company.com", "cto@startup.io"],
+    frequency="weekly",
+)
+
+print(monitor.id)           # "mon_abc123..."
+print(monitor.email_count)  # 2
+```
+
+### List monitors
+
+```python
+monitors = client.list_monitors()
+for m in monitors:
+    print(f"{m.name}: {m.email_count} emails, {m.status}")
+```
+
+### Trigger a run
+
+```python
+result = client.trigger_run(monitor.id)
+print(result["run_id"])   # "run_xyz789..."
+print(result["status"])   # "running"
+```
+
+### Get run results
+
+```python
+runs, total = client.list_runs(monitor.id)
+for run in runs:
+    print(f"Run {run.id}: {run.changes_detected} changes")
+
+# Get detailed results for a run
+snapshots, total = client.get_run_results(monitor.id, runs[0].id, changes_only=True)
+for snap in snapshots:
+    print(f"{snap.email}: changes={snap.changes}")
+```
+
+### List all runs across monitors
+
+```python
+all_runs, total = client.list_all_runs(limit=10)
+all_results, total = client.list_all_results(changes_only=True)
+```
+
+## Contact Lists
+
+Manage reusable email lists that can be used as data sources for monitors.
+
+### Create a contact list
+
+```python
+contact_list = client.create_contact_list(
+    "Engineering Team",
+    emails=["alice@company.com", "bob@company.com"],
+)
+print(contact_list.id)
+```
+
+### Manage list emails
+
+```python
+# List all contact lists
+lists = client.list_contact_lists()
+
+# Add emails
+client.add_contact_list_emails(contact_list.id, ["charlie@company.com"])
+
+# List emails in a list
+emails = client.list_contact_list_emails(contact_list.id)
+
+# Remove emails
+client.delete_contact_list_emails(contact_list.id, ["bob@company.com"])
+
+# Delete the list
+client.delete_contact_list(contact_list.id)
+```
+
+### Use a list as a monitor source
+
+```python
+monitor = client.create_monitor("Team Monitor", list_id=contact_list.id)
+```
+
+## Handling exceptions
 
 ```python
 from encrata import Encrata, AuthenticationError, InsufficientCreditsError
