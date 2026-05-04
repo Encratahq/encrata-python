@@ -1,0 +1,49 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "encrata"
+version = "0.1.0"
+description = "Python bindings for the Encrata email intelligence API"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.9"
+authors = [
+    { name = "Encrata", email = "support@encrata.com" },
+]
+keywords = [
+    "encrata",
+    "email",
+    "osint",
+    "enrichment",
+    "intelligence",
+    "api",
+    "lookup",
+    "breach",
+    "validation",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://encrata.com"
+Documentation = "https://docs.encrata.com"
+Repository = "https://github.com/Encratahq/encrata-python"
+Changelog = "https://github.com/Encratahq/encrata-python/blob/main/CHANGELOG.md"
+
+[tool.hatch.build.targets.wheel]
+packages = ["encrata"]
