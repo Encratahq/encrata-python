@@ -232,7 +232,7 @@ person = client.lookup("elon@tesla.com", nocache=True)
 ## Async
 
 An async client, `AsyncEncrata`, exposes the same methods with `async`/`await`.
-It shares one connection pool and can run many lookups concurrently.
+It shares one connection pool and can run many lookups concurrently
 
 ```python
 import asyncio
