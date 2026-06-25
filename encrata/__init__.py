@@ -1,6 +1,7 @@
 """Encrata — Email intelligence API for Python."""
 
-from .client import Encrata, FIELDS
+from .client import Encrata
+from .async_client import AsyncEncrata
 from .types import (
     BreachInfo,
     BreachReport,
@@ -30,7 +31,7 @@ __version__ = "0.2.0"
 __all__ = [
     # Client
     "Encrata",
-    "FIELDS",
+    "AsyncEncrata",
     # Types
     "Person",
     "Socials",

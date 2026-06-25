@@ -10,3 +10,8 @@ build/
 .venv/
 venv/
 .env
+.pytest_cache/
+
+# Local scratch / manual test scripts
+test_sdk.py
+try.py

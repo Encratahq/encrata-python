@@ -18,11 +18,11 @@ class Socials:
         if not data:
             return None
         return cls(
-            linkedin=data.get("li"),
-            twitter=data.get("tw"),
-            instagram=data.get("ig"),
-            facebook=data.get("fb"),
-            github=data.get("gh"),
+            linkedin=data.get("linkedin"),
+            twitter=data.get("twitter"),
+            instagram=data.get("instagram"),
+            facebook=data.get("facebook"),
+            github=data.get("github"),
         )
 
 
@@ -39,8 +39,8 @@ class BreachInfo:
             return None
         return cls(
             count=data.get("count", 0),
-            services=data.get("svc", []),
-            exposed_data=data.get("data", []),
+            services=data.get("services", []),
+            exposed_data=data.get("exposed_data", []),
         )
 
 
@@ -56,7 +56,7 @@ class RegisteredServices:
             return None
         return cls(
             count=data.get("count", 0),
-            services=data.get("svc", []),
+            services=data.get("services", []),
         )
 
 
@@ -71,10 +71,10 @@ class NewsArticle:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> NewsArticle:
         return cls(
-            title=data.get("t", ""),
-            url=data.get("u", ""),
-            date=data.get("d", ""),
-            source=data.get("s", ""),
+            title=data.get("title", ""),
+            url=data.get("url", ""),
+            date=data.get("date", ""),
+            source=data.get("source", ""),
         )
 
 
@@ -89,10 +89,10 @@ class Publication:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Publication:
         return cls(
-            title=data.get("t", ""),
-            url=data.get("u", ""),
-            year=data.get("y"),
-            citations=data.get("c", 0),
+            title=data.get("title", ""),
+            url=data.get("url", ""),
+            year=data.get("year"),
+            citations=data.get("citations", 0),
         )
 
 
@@ -123,27 +123,27 @@ class Person:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Person:
         news = [NewsArticle.from_dict(n) for n in data.get("news", [])]
-        pubs = [Publication.from_dict(p) for p in data.get("pub", [])]
+        pubs = [Publication.from_dict(p) for p in data.get("publications", [])]
 
         return cls(
-            name=data.get("n"),
-            email=data.get("e"),
-            company=data.get("co"),
+            name=data.get("name"),
+            email=data.get("email"),
+            company=data.get("company"),
             role=data.get("role"),
-            industry=data.get("ind"),
-            location=data.get("loc"),
-            birthplace=data.get("bloc"),
-            current_location=data.get("cloc"),
+            industry=data.get("industry"),
+            location=data.get("location"),
+            birthplace=data.get("birthplace"),
+            current_location=data.get("current_location"),
             bio=data.get("bio"),
             age=data.get("age"),
-            gender=data.get("g"),
-            education=data.get("edu"),
-            phone=data.get("ph"),
-            photo_url=data.get("pic"),
-            validity=data.get("v"),
-            socials=Socials.from_dict(data.get("s")),
-            breaches=BreachInfo.from_dict(data.get("b")),
-            registered_services=RegisteredServices.from_dict(data.get("reg")),
+            gender=data.get("gender"),
+            education=data.get("education"),
+            phone=data.get("phone"),
+            photo_url=data.get("photo"),
+            validity=data.get("validity"),
+            socials=Socials.from_dict(data.get("socials")),
+            breaches=BreachInfo.from_dict(data.get("breaches")),
+            registered_services=RegisteredServices.from_dict(data.get("registered_services")),
             news=news,
             publications=pubs,
         )
@@ -159,9 +159,9 @@ class Validation:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Validation:
         return cls(
-            email=data.get("e", ""),
-            validity=data.get("v", "unknown"),
-            message=data.get("msg", ""),
+            email=data.get("email", ""),
+            validity=data.get("validity", "unknown"),
+            message=data.get("message", ""),
         )
 
 
@@ -177,11 +177,11 @@ class BreachReport:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> BreachReport:
         return cls(
-            email=data.get("e", ""),
+            email=data.get("email", ""),
             count=data.get("count", 0),
-            services=data.get("svc", []),
-            exposed_data=data.get("data", []),
-            message=data.get("msg", ""),
+            services=data.get("services", []),
+            exposed_data=data.get("exposed_data", []),
+            message=data.get("message", ""),
         )
 
 

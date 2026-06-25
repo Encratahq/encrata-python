@@ -19,7 +19,7 @@ pip install encrata
 ### Requirements
 
 - Python 3.9+
-- No external dependencies (uses `urllib` from the standard library)
+- [`httpx`](https://www.python-httpx.org/) (installed automatically)
 
 ## Usage
 
@@ -29,6 +29,15 @@ The library needs to be configured with your account's API key, available in you
 from encrata import Encrata
 
 client = Encrata("enc_live_...")
+```
+
+The client keeps a pooled HTTP connection open. Reuse a single instance for the
+lifetime of your application, or use it as a context manager to close the pool
+automatically:
+
+```python
+with Encrata("enc_live_...") as client:
+    person = client.lookup("elon@tesla.com")
 ```
 
 ### Look up a person by email
@@ -204,8 +213,13 @@ client = Encrata(
     "enc_live_...",
     base_url="https://api.encrata.com",  # default
     timeout=30,                           # request timeout in seconds
+    max_retries=3,                        # retries for transient failures
 )
 ```
+
+Transient failures (HTTP 429, 500, 502, 503, 504, timeouts, and connection
+errors) are retried automatically using exponential backoff with full jitter. A
+`Retry-After` response header is honored and capped at 30 seconds.
 
 ### Force fresh lookup
 
@@ -213,6 +227,32 @@ Bypass the 24-hour cache to get the latest data:
 
 ```python
 person = client.lookup("elon@tesla.com", nocache=True)
+```
+
+## Async
+
+An async client, `AsyncEncrata`, exposes the same methods with `async`/`await`.
+It shares one connection pool and can run many lookups concurrently.
+
+```python
+import asyncio
+from encrata import AsyncEncrata
+
+async def main():
+    async with AsyncEncrata("enc_live_...") as client:
+        person = await client.lookup("elon@tesla.com")
+        print(person.name)
+
+        # Run many lookups concurrently (bounded by max_concurrency):
+        people = await client.lookup_many([
+            "a@example.com",
+            "b@example.com",
+            "c@example.com",
+        ])
+        for p in people:
+            print(p.name)
+
+asyncio.run(main())
 ```
 
 ## MCP (Model Context Protocol)
