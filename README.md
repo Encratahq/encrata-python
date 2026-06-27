@@ -72,7 +72,7 @@ Available fields: `name`, `email`, `company`, `role`, `industry`, `location`, `b
 Check if an email is deliverable without using any credits:
 
 ```python
-result = client.validate("test@example.com")
+result = client.validate("satya@microsoft.com")
 
 print(result.validity)  # "valid", "invalid", "disposable", or "unknown"
 print(result.message)   # "Email is deliverable and valid."
@@ -83,7 +83,7 @@ print(result.message)   # "Email is deliverable and valid."
 See if an email has been exposed in known data breaches:
 
 ```python
-report = client.breaches("user@example.com")
+report = client.breaches("sundar@google.com")
 
 print(report.count)         # 3
 print(report.services)      # ["Adobe", "LinkedIn", "Dropbox"]
@@ -99,7 +99,7 @@ Set up monitors to track changes in email intelligence over time. When a person 
 ```python
 monitor = client.create_monitor(
     "Sales Leads",
-    emails=["ceo@company.com", "cto@startup.io"],
+    emails=["satya@microsoft.com", "jensen@nvidia.com"],
     frequency="weekly",
 )
 
@@ -143,6 +143,9 @@ all_runs, total = client.list_all_runs(limit=10)
 all_results, total = client.list_all_results(changes_only=True)
 ```
 
+These paginated endpoints also have iterator forms that fetch every page for
+you — see [Automatic pagination](#automatic-pagination) below.
+
 ## Contact Lists
 
 Manage reusable email lists that can be used as data sources for monitors.
@@ -152,7 +155,7 @@ Manage reusable email lists that can be used as data sources for monitors.
 ```python
 contact_list = client.create_contact_list(
     "Engineering Team",
-    emails=["alice@company.com", "bob@company.com"],
+    emails=["satya@microsoft.com", "sundar@google.com"],
 )
 print(contact_list.id)
 ```
@@ -164,13 +167,13 @@ print(contact_list.id)
 lists = client.list_contact_lists()
 
 # Add emails
-client.add_contact_list_emails(contact_list.id, ["charlie@company.com"])
+client.add_contact_list_emails(contact_list.id, ["tim@apple.com"])
 
 # List emails in a list
 emails = client.list_contact_list_emails(contact_list.id)
 
 # Remove emails
-client.delete_contact_list_emails(contact_list.id, ["bob@company.com"])
+client.delete_contact_list_emails(contact_list.id, ["sundar@google.com"])
 
 # Delete the list
 client.delete_contact_list(contact_list.id)
@@ -182,6 +185,43 @@ client.delete_contact_list(contact_list.id)
 monitor = client.create_monitor("Team Monitor", list_id=contact_list.id)
 ```
 
+## Automatic pagination
+
+List endpoints return one page at a time along with a total count. To walk an
+entire history without managing `limit`/`offset` yourself, use the matching
+iterator helpers — they fetch each subsequent page on demand as you iterate:
+
+```python
+# Every run across all monitors
+for run in client.iter_all_runs():
+    print(run.id, run.status)
+
+# Every result across all monitors (only the ones that changed)
+for snapshot in client.iter_all_results(changes_only=True):
+    print(snapshot.email, snapshot.has_changes)
+
+# Scoped to a single monitor or run
+for run in client.iter_runs(monitor.id):
+    print(run.id)
+
+for snapshot in client.iter_run_results(monitor.id, run.id):
+    print(snapshot.email)
+```
+
+Pass `limit` to control the page size used under the hood (default `100`):
+
+```python
+for run in client.iter_all_runs(limit=250):
+    ...
+```
+
+The async client exposes the same helpers as async iterators:
+
+```python
+async for run in client.iter_all_runs():
+    print(run.id)
+```
+
 ## Handling exceptions
 
 ```python
@@ -190,7 +230,7 @@ from encrata import Encrata, AuthenticationError, InsufficientCreditsError
 client = Encrata("enc_live_...")
 
 try:
-    person = client.lookup("someone@example.com")
+    person = client.lookup("satya@microsoft.com")
 except AuthenticationError:
     print("Invalid API key")
 except InsufficientCreditsError:
@@ -245,9 +285,9 @@ async def main():
 
         # Run many lookups concurrently (bounded by max_concurrency):
         people = await client.lookup_many([
-            "a@example.com",
-            "b@example.com",
-            "c@example.com",
+            "satya@microsoft.com",
+            "sundar@google.com",
+            "tim@apple.com",
         ])
         for p in people:
             print(p.name)

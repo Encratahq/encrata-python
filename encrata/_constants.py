@@ -5,19 +5,7 @@ from __future__ import annotations
 from email.utils import parsedate_to_datetime
 from datetime import datetime, timezone
 
-try:
-    from importlib.metadata import PackageNotFoundError, version as _pkg_version
-except ImportError:  # pragma: no cover - Python < 3.8
-    PackageNotFoundError = Exception  # type: ignore[assignment,misc]
-
-    def _pkg_version(_name: str) -> str:  # type: ignore[misc]
-        raise PackageNotFoundError
-
-
-try:
-    __version__ = _pkg_version("encrata")
-except PackageNotFoundError:  # pragma: no cover - running from a source checkout
-    __version__ = "0.3.0"
+from ._version import __version__
 
 DEFAULT_BASE_URL = "https://api.encrata.com"
 USER_AGENT = f"encrata-python/{__version__}"

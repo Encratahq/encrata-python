@@ -4,6 +4,24 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-06-27
+
+### Added
+- Synchronous `lookup_many()` helper that resolves many emails concurrently
+  through a thread pool, with `return_exceptions` to collect failures inline
+  and a configurable `max_workers`.
+- Automatic pagination helpers that transparently fetch every page:
+  `iter_runs()`, `iter_run_results()`, `iter_all_runs()`, and
+  `iter_all_results()`, available on both the sync and async clients.
+- `__version__` is now exported from the top-level `encrata` package.
+
+### Changed
+- The package version is single-sourced from `encrata/_version.py` and read at
+  build time via Hatchling dynamic versioning, so package metadata and the
+  runtime `User-Agent` can no longer drift.
+- `lookup()` now builds query parameters through the request layer instead of
+  manual query-string concatenation.
+
 ## [0.3.0] - 2026-06-25
 
 ### Added
@@ -38,5 +56,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Typed exception hierarchy (`AuthenticationError`, `InsufficientCreditsError`,
   `InvalidRequestError`, `RateLimitError`, `APIConnectionError`, `APIError`).
 
+[0.4.0]: https://github.com/Encratahq/encrata-python/releases/tag/v0.4.0
 [0.3.0]: https://github.com/Encratahq/encrata-python/releases/tag/v0.3.0
 [0.2.0]: https://github.com/Encratahq/encrata-python/releases/tag/v0.2.0

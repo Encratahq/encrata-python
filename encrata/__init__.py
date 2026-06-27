@@ -1,5 +1,6 @@
 """Encrata — Email intelligence API for Python."""
 
+from ._version import __version__
 from .client import Encrata
 from .async_client import AsyncEncrata
 from .types import (
@@ -26,8 +27,6 @@ from .exceptions import (
     RateLimitError,
 )
 
-__version__ = "0.3.0"
-
 __all__ = [
     # Client
     "Encrata",
@@ -53,4 +52,6 @@ __all__ = [
     "RateLimitError",
     "APIConnectionError",
     "APIError",
+    # Metadata
+    "__version__",
 ]

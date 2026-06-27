@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 import mock_data as data
 
 
@@ -89,6 +91,22 @@ def test_list_runs_returns_runs_and_total(client, transport):
     assert runs[0].changes_detected == 3
 
 
+def test_iter_runs_fetches_pages_until_total(client, transport):
+    first = {**data.MONITOR_RUN, "id": "run_1"}
+    second = {**data.MONITOR_RUN, "id": "run_2"}
+    third = {**data.MONITOR_RUN, "id": "run_3"}
+    transport.respond({"runs": [first, second], "total": 3})
+    transport.respond({"runs": [third], "total": 3})
+
+    runs = list(client.iter_runs("mon_123", limit=2))
+
+    assert [run.id for run in runs] == ["run_1", "run_2", "run_3"]
+    assert "limit=2" in transport.url(0)
+    assert "offset=0" in transport.url(0)
+    assert "limit=2" in transport.url(1)
+    assert "offset=2" in transport.url(1)
+
+
 def test_get_run_results_changes_only(client, transport):
     transport.respond(data.RESULTS_RESPONSE)
 
@@ -112,6 +130,30 @@ def test_get_run_results_without_changes_only(client, transport):
     assert "changes_only" not in transport.url()
 
 
+def test_iter_run_results_fetches_pages_until_total(client, transport):
+    first = {**data.SNAPSHOT, "id": "snap_1", "email": "a@example.com"}
+    second = {**data.SNAPSHOT, "id": "snap_2", "email": "b@example.com"}
+    transport.respond({"results": [first], "total": 2})
+    transport.respond({"results": [second], "total": 2})
+
+    snapshots = list(
+        client.iter_run_results(
+            "mon_123",
+            "run_789",
+            changes_only=True,
+            limit=1,
+        )
+    )
+
+    assert [snapshot.email for snapshot in snapshots] == [
+        "a@example.com",
+        "b@example.com",
+    ]
+    assert "changes_only=true" in transport.url(0)
+    assert "offset=0" in transport.url(0)
+    assert "offset=1" in transport.url(1)
+
+
 def test_list_all_runs(client, transport):
     transport.respond(data.RUNS_RESPONSE)
 
@@ -120,6 +162,19 @@ def test_list_all_runs(client, transport):
     assert transport.url().split("?")[0].endswith("/api/agent/monitoring/runs")
     assert total == 1
     assert len(runs) == 1
+
+
+def test_iter_all_runs_fetches_pages_until_total(client, transport):
+    first = {**data.MONITOR_RUN, "id": "run_1"}
+    second = {**data.MONITOR_RUN, "id": "run_2"}
+    transport.respond({"runs": [first], "total": 2})
+    transport.respond({"runs": [second], "total": 2})
+
+    runs = list(client.iter_all_runs(limit=1))
+
+    assert [run.id for run in runs] == ["run_1", "run_2"]
+    assert transport.url(0).split("?")[0].endswith("/api/agent/monitoring/runs")
+    assert "offset=1" in transport.url(1)
 
 
 def test_list_all_results(client, transport):
@@ -132,3 +187,25 @@ def test_list_all_results(client, transport):
     assert "changes_only=true" in url
     assert total == 1
     assert len(snapshots) == 1
+
+
+def test_iter_all_results_fetches_pages_until_total(client, transport):
+    first = {**data.SNAPSHOT, "id": "snap_1", "email": "a@example.com"}
+    second = {**data.SNAPSHOT, "id": "snap_2", "email": "b@example.com"}
+    transport.respond({"results": [first], "total": 2})
+    transport.respond({"results": [second], "total": 2})
+
+    snapshots = list(client.iter_all_results(changes_only=True, limit=1))
+
+    assert [snapshot.email for snapshot in snapshots] == [
+        "a@example.com",
+        "b@example.com",
+    ]
+    assert "/api/agent/monitoring/results" in transport.url(0)
+    assert "changes_only=true" in transport.url(0)
+    assert "offset=1" in transport.url(1)
+
+
+def test_iter_paginated_methods_reject_non_positive_limit(client):
+    with pytest.raises(ValueError, match="limit must be greater than 0"):
+        list(client.iter_all_runs(limit=0))

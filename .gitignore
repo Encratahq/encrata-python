@@ -11,6 +11,10 @@ build/
 venv/
 .env
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
 
 # Local scratch / manual test scripts
 test_sdk.py

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "encrata"
-version = "0.3.0"
+dynamic = ["version"]
 description = "Python bindings for the Encrata email intelligence API"
 readme = "README.md"
 license = "MIT"
@@ -50,6 +50,9 @@ Changelog = "https://github.com/Encratahq/encrata-python/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["encrata"]
+
+[tool.hatch.version]
+path = "encrata/_version.py"
 
 [project.optional-dependencies]
 test = ["pytest"]

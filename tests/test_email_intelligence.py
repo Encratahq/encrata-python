@@ -6,7 +6,14 @@ client relies on.
 
 from __future__ import annotations
 
+from urllib.parse import parse_qs, urlsplit
+
 import mock_data as data
+
+
+def _query(url: str) -> dict[str, list[str]]:
+    """Parse a URL's query string into decoded {name: [values]} pairs."""
+    return parse_qs(urlsplit(url).query)
 
 
 # ── lookup ────────────────────────────────────────────────────────────
@@ -64,7 +71,7 @@ def test_lookup_fields_passed_as_names(client, transport):
 
     client.lookup("elon@tesla.com", fields=["name", "company", "socials"])
 
-    assert "fields=name,company,socials" in transport.url()
+    assert _query(transport.url())["fields"] == ["name,company,socials"]
 
 
 def test_lookup_unknown_field_passes_through(client, transport):
@@ -72,7 +79,7 @@ def test_lookup_unknown_field_passes_through(client, transport):
 
     client.lookup("elon@tesla.com", fields=["name", "unknown_field"])
 
-    assert "fields=name,unknown_field" in transport.url()
+    assert _query(transport.url())["fields"] == ["name,unknown_field"]
 
 
 def test_lookup_nocache_only(client, transport):
@@ -92,6 +99,53 @@ def test_lookup_fields_and_nocache(client, transport):
     url = transport.url()
     assert "fields=name" in url
     assert "nocache=1" in url
+
+
+# ── lookup_many ───────────────────────────────────────────────────────
+
+def test_lookup_many_returns_all_in_order(client, transport):
+    transport.respond(data.PERSON).respond(data.PERSON).respond(data.PERSON)
+
+    results = client.lookup_many(
+        ["a@x.com", "b@x.com", "c@x.com"], max_workers=1
+    )
+
+    assert len(results) == 3
+    assert all(p.name == "Elon Musk" for p in results)
+
+
+def test_lookup_many_empty_returns_empty(client, transport):
+    assert client.lookup_many([]) == []
+
+
+def test_lookup_many_inline_exceptions(client, transport):
+    from encrata import InvalidRequestError
+    from helpers import make_http_error
+
+    # Sequential (max_workers=1) so the queued error maps to the 2nd email.
+    transport.respond(data.PERSON).error(make_http_error(400)).respond(data.PERSON)
+
+    results = client.lookup_many(
+        ["a@x.com", "bad@x.com", "c@x.com"],
+        return_exceptions=True,
+        max_workers=1,
+    )
+
+    assert results[0].name == "Elon Musk"
+    assert isinstance(results[1], InvalidRequestError)
+    assert results[2].name == "Elon Musk"
+
+
+def test_lookup_many_raises_without_return_exceptions(client, transport):
+    import pytest
+
+    from encrata import InvalidRequestError
+    from helpers import make_http_error
+
+    transport.respond(data.PERSON).error(make_http_error(400))
+
+    with pytest.raises(InvalidRequestError):
+        client.lookup_many(["a@x.com", "bad@x.com"], max_workers=1)
 
 
 # ── validate ──────────────────────────────────────────────────────────

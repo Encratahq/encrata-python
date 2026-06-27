@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import random
-from typing import Any, Sequence
+from typing import Any, AsyncIterator, Sequence
 
 import httpx
 
@@ -202,6 +202,29 @@ class AsyncEncrata:
         runs = [MonitorRun.from_dict(r) for r in data.get("runs", [])]
         return runs, data.get("total", len(runs))
 
+    async def iter_runs(
+        self,
+        monitor_id: str,
+        *,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> AsyncIterator[MonitorRun]:
+        """Yield all runs for a monitor, fetching additional pages as needed."""
+        if limit <= 0:
+            raise ValueError("limit must be greater than 0")
+
+        while True:
+            runs, total = await self.list_runs(monitor_id, limit=limit, offset=offset)
+            if not runs:
+                return
+
+            for run in runs:
+                yield run
+
+            offset += len(runs)
+            if offset >= total:
+                return
+
     async def get_run_results(
         self,
         monitor_id: str,
@@ -222,6 +245,37 @@ class AsyncEncrata:
         snapshots = [MonitorSnapshot.from_dict(s) for s in data.get("results", [])]
         return snapshots, data.get("total", len(snapshots))
 
+    async def iter_run_results(
+        self,
+        monitor_id: str,
+        run_id: str,
+        *,
+        changes_only: bool = False,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> AsyncIterator[MonitorSnapshot]:
+        """Yield all results for a run, fetching additional pages as needed."""
+        if limit <= 0:
+            raise ValueError("limit must be greater than 0")
+
+        while True:
+            snapshots, total = await self.get_run_results(
+                monitor_id,
+                run_id,
+                changes_only=changes_only,
+                limit=limit,
+                offset=offset,
+            )
+            if not snapshots:
+                return
+
+            for snapshot in snapshots:
+                yield snapshot
+
+            offset += len(snapshots)
+            if offset >= total:
+                return
+
     async def list_all_runs(
         self,
         *,
@@ -235,6 +289,28 @@ class AsyncEncrata:
         )
         runs = [MonitorRun.from_dict(r) for r in data.get("runs", [])]
         return runs, data.get("total", len(runs))
+
+    async def iter_all_runs(
+        self,
+        *,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> AsyncIterator[MonitorRun]:
+        """Yield all runs across monitors, fetching additional pages as needed."""
+        if limit <= 0:
+            raise ValueError("limit must be greater than 0")
+
+        while True:
+            runs, total = await self.list_all_runs(limit=limit, offset=offset)
+            if not runs:
+                return
+
+            for run in runs:
+                yield run
+
+            offset += len(runs)
+            if offset >= total:
+                return
 
     async def list_all_results(
         self,
@@ -250,6 +326,33 @@ class AsyncEncrata:
         data = await self._get("/api/agent/monitoring/results", params=params)
         snapshots = [MonitorSnapshot.from_dict(s) for s in data.get("results", [])]
         return snapshots, data.get("total", len(snapshots))
+
+    async def iter_all_results(
+        self,
+        *,
+        changes_only: bool = False,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> AsyncIterator[MonitorSnapshot]:
+        """Yield all results across monitors, fetching additional pages as needed."""
+        if limit <= 0:
+            raise ValueError("limit must be greater than 0")
+
+        while True:
+            snapshots, total = await self.list_all_results(
+                changes_only=changes_only,
+                limit=limit,
+                offset=offset,
+            )
+            if not snapshots:
+                return
+
+            for snapshot in snapshots:
+                yield snapshot
+
+            offset += len(snapshots)
+            if offset >= total:
+                return
 
     # ── Contact Lists ─────────────────────────────────
 

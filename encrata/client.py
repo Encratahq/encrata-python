@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from typing import Any, Sequence
+from typing import Any, Iterator, Sequence
 
 import httpx
 import time
 import random
+from concurrent.futures import ThreadPoolExecutor
 
 from .exceptions import (
     APIConnectionError,
@@ -108,15 +109,13 @@ class Encrata:
         Returns:
             A :class:`Person` with the enrichment results.
         """
-        params = ""
+        params: dict[str, Any] = {}
         if fields:
-            params += f"?fields={','.join(fields)}"
-            if nocache:
-                params += "&nocache=1"
-        elif nocache:
-            params += "?nocache=1"
+            params["fields"] = ",".join(fields)
+        if nocache:
+            params["nocache"] = "1"
 
-        data = self._post(f"/api/agent/lookup{params}", {"email": email})
+        data = self._post("/api/agent/lookup", {"email": email}, params=params)
         return Person.from_dict(data)
 
     def validate(self, email: str) -> Validation:
@@ -128,6 +127,41 @@ class Encrata:
         """Check data breach exposure for an email (free — no credits used)."""
         data = self._post("/api/agent/breaches", {"email": email})
         return BreachReport.from_dict(data)
+
+    def lookup_many(
+        self,
+        emails: Sequence[str],
+        *,
+        fields: Sequence[str] | None = None,
+        nocache: bool = False,
+        return_exceptions: bool = False,
+        max_workers: int = 10,
+    ) -> list[Person | BaseException]:
+        """Look up many emails concurrently using a thread pool.
+
+        Results are returned in the same order as ``emails``. Set
+        ``return_exceptions=True`` to get failures inline instead of raising
+        (so one bad email doesn't discard the results you already paid for).
+        """
+        items = list(emails)
+        if not items:
+            return []
+
+        def _one(email: str) -> Person:
+            return self.lookup(email, fields=fields, nocache=nocache)
+
+        workers = max(1, min(max_workers, len(items)))
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futures = [pool.submit(_one, email) for email in items]
+            results: list[Person | BaseException] = []
+            for future in futures:
+                try:
+                    results.append(future.result())
+                except BaseException as exc:  # noqa: BLE001
+                    if not return_exceptions:
+                        raise
+                    results.append(exc)
+            return results
 
     # ── Monitors ──────────────────────────────────────
 
@@ -199,6 +233,28 @@ class Encrata:
         runs = [MonitorRun.from_dict(r) for r in data.get("runs", [])]
         return runs, data.get("total", len(runs))
 
+    def iter_runs(
+        self,
+        monitor_id: str,
+        *,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> Iterator[MonitorRun]:
+        """Yield all runs for a monitor, fetching additional pages as needed."""
+        if limit <= 0:
+            raise ValueError("limit must be greater than 0")
+
+        while True:
+            runs, total = self.list_runs(monitor_id, limit=limit, offset=offset)
+            if not runs:
+                return
+
+            yield from runs
+
+            offset += len(runs)
+            if offset >= total:
+                return
+
     def get_run_results(
         self,
         monitor_id: str,
@@ -223,6 +279,36 @@ class Encrata:
         snapshots = [MonitorSnapshot.from_dict(s) for s in data.get("results", [])]
         return snapshots, data.get("total", len(snapshots))
 
+    def iter_run_results(
+        self,
+        monitor_id: str,
+        run_id: str,
+        *,
+        changes_only: bool = False,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> Iterator[MonitorSnapshot]:
+        """Yield all results for a run, fetching additional pages as needed."""
+        if limit <= 0:
+            raise ValueError("limit must be greater than 0")
+
+        while True:
+            snapshots, total = self.get_run_results(
+                monitor_id,
+                run_id,
+                changes_only=changes_only,
+                limit=limit,
+                offset=offset,
+            )
+            if not snapshots:
+                return
+
+            yield from snapshots
+
+            offset += len(snapshots)
+            if offset >= total:
+                return
+
     def list_all_runs(
         self,
         *,
@@ -240,6 +326,27 @@ class Encrata:
         )
         runs = [MonitorRun.from_dict(r) for r in data.get("runs", [])]
         return runs, data.get("total", len(runs))
+
+    def iter_all_runs(
+        self,
+        *,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> Iterator[MonitorRun]:
+        """Yield all runs across monitors, fetching additional pages as needed."""
+        if limit <= 0:
+            raise ValueError("limit must be greater than 0")
+
+        while True:
+            runs, total = self.list_all_runs(limit=limit, offset=offset)
+            if not runs:
+                return
+
+            yield from runs
+
+            offset += len(runs)
+            if offset >= total:
+                return
 
     def list_all_results(
         self,
@@ -259,6 +366,32 @@ class Encrata:
         data = self._get("/api/agent/monitoring/results", params=params)
         snapshots = [MonitorSnapshot.from_dict(s) for s in data.get("results", [])]
         return snapshots, data.get("total", len(snapshots))
+
+    def iter_all_results(
+        self,
+        *,
+        changes_only: bool = False,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> Iterator[MonitorSnapshot]:
+        """Yield all results across monitors, fetching additional pages as needed."""
+        if limit <= 0:
+            raise ValueError("limit must be greater than 0")
+
+        while True:
+            snapshots, total = self.list_all_results(
+                changes_only=changes_only,
+                limit=limit,
+                offset=offset,
+            )
+            if not snapshots:
+                return
+
+            yield from snapshots
+
+            offset += len(snapshots)
+            if offset >= total:
+                return
 
     # ── Contact Lists ─────────────────────────────────
 
@@ -327,8 +460,14 @@ class Encrata:
     ) -> dict[str, Any]:
         return self._request("GET", path, params=params)
 
-    def _post(self, path: str, body: dict[str, Any]) -> dict[str, Any]:
-        return self._request("POST", path, body=body)
+    def _post(
+        self,
+        path: str,
+        body: dict[str, Any],
+        *,
+        params: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        return self._request("POST", path, body=body, params=params)
 
     def _delete(self, path: str) -> dict[str, Any]:
         return self._request("DELETE", path)
