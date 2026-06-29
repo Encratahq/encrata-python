@@ -138,6 +138,83 @@ for person in company.results:
 
 Costs 1 credit per result returned.
 
+### Google dork search
+
+```python
+search = client.google_search("site:example.com filetype:pdf")
+
+for r in search.results:
+    print(r.title, r.url)
+
+# Free OSINT enrichment (no extra credits)
+print(search.enrichment["query_type"])  # "domain"
+```
+
+Costs 1 credit per search; the `enrichment` block is free.
+
+### Dark web search
+
+```python
+dw = client.darkweb_search("user@example.com")
+
+print(dw.total)  # 42
+for hit in dw.results:
+    print(hit.source, hit.title, hit.emails)
+
+# Paginate (20 results per page)
+page2 = client.darkweb_search("user@example.com", offset=20)
+```
+
+Costs 1 credit per 100 results.
+
+### Scrape a web page
+
+```python
+page = client.scrape("https://example.com/pricing")
+
+print(page.status_code)        # 200
+print(page.content)            # "# Pricing\n\nSimple, transparent pricing..."
+print(page.metadata["title"])  # "Pricing — Example"
+
+# Skip JS rendering for static pages
+page = client.scrape("https://example.com", render_js=False)
+```
+
+Costs 2 credits; failed scrapes are auto-refunded.
+
+### Extract structured data
+
+```python
+# Selector mode — JSON keyed by your CSS/XPath map
+result = client.extract(
+    "https://example.com/product/123",
+    mode="selectors",
+    selectors={"title": "h1", "price": ".price"},
+)
+print(result.extracted)  # {"title": "Wireless Headphones", "price": "$129.00"}
+
+# Markdown mode (default), wait for lazy content
+result = client.extract("https://example.com", wait_for=".loaded", timeout=45000)
+print(result.extracted)
+```
+
+Costs 3 credits; failed extractions are auto-refunded.
+
+### Capture a screenshot
+
+```python
+shot = client.screenshot("https://example.com", full_page=True, format="png")
+
+import base64
+with open("page.png", "wb") as f:
+    f.write(base64.b64decode(shot.screenshot))
+
+# Capture a single element instead
+shot = client.screenshot("https://example.com", selector="#hero")
+```
+
+Costs 5 credits; failed captures are auto-refunded.
+
 ## Monitoring
 
 Set up monitors to track changes in email intelligence over time. When a person changes jobs, gets a new title, or appears in a breach — you'll know.

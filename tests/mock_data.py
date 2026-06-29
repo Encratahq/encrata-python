@@ -31,7 +31,7 @@ PERSON = {
         "facebook": None,
         "github": "https://github.com/elonmusk",
     },
-    "breaches": {
+    "breach": {
         "count": 2,
         "services": ["Adobe", "LinkedIn"],
         "exposed_data": ["email", "password"],
@@ -41,7 +41,7 @@ PERSON = {
         {"title": "Tesla hits record", "url": "https://news/1", "date": "2025-01-02", "source": "Reuters"},
     ],
     "publications": [
-        {"title": "Rockets 101", "url": "https://doi/1", "year": 2020, "citations": 42},
+        {"title": "Rockets 101", "url": "https://doi/1", "year": 2020, "cited_by": 42},
     ],
 }
 

@@ -18,7 +18,7 @@ def transport() -> MockTransport:
 def sleeps(monkeypatch) -> list[float]:
     """Capture (and neutralise) all backoff sleeps so tests never wait."""
     recorded: list[float] = []
-    monkeypatch.setattr("encrata.client.time.sleep", recorded.append)
+    monkeypatch.setattr("encrata._http.time.sleep", recorded.append)
     return recorded
 
 
