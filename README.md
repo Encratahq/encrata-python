@@ -215,6 +215,24 @@ shot = client.screenshot("https://example.com", selector="#hero")
 
 Costs 5 credits; failed captures are auto-refunded.
 
+### Face search
+
+Match a probe image against your watchlist by public image URL:
+
+```python
+result = client.face_search("https://example.com/photo.jpg")
+
+print(result.matched)          # True
+print(result.faces_detected)   # 1
+for match in result.matches:
+    print(match.name, match.probability)  # "Elon Musk" 0.97
+
+# Tune the match threshold (0.0–1.0)
+result = client.face_search("https://example.com/photo.jpg", threshold=0.9)
+```
+
+Costs 1 credit per search.
+
 ## Monitoring
 
 Set up monitors to track changes in email intelligence over time. When a person changes jobs, gets a new title, or appears in a breach — you'll know.
@@ -308,6 +326,41 @@ client.delete_contact_list(contact_list.id)
 
 ```python
 monitor = client.create_monitor("Team Monitor", list_id=contact_list.id)
+```
+
+## Bulk operations
+
+Process many queries in a single request. Bulk endpoints stream results back
+over Server-Sent Events, so you can begin handling hits before the batch
+finishes. Each query costs **1 credit**.
+
+### Bulk email lookup
+
+Enrich up to 1,000 emails — results stream in one `Person` at a time:
+
+```python
+for person in client.bulk_lookup(["elon@tesla.com", "satya@microsoft.com"]):
+    print(person.name, person.company)
+
+# Limit fields to shrink each result
+for person in client.bulk_lookup(emails, fields=["name", "company"]):
+    print(person.name)
+```
+
+### Bulk OSINT searches
+
+Run up to 100 queries per call for Google, company, domain, or IP intelligence.
+Each collects the full stream into a single `BulkSearchResponse`:
+
+```python
+res = client.bulk_google_search(["site:tesla.com", "site:microsoft.com"])
+print(res.credits_used)  # 2
+for item in res.results:
+    print(item)
+
+client.bulk_company_search(["Tesla", "Microsoft"])
+client.bulk_domain_search(["tesla.com", "microsoft.com"])
+client.bulk_ip_search(["8.8.8.8", "1.1.1.1"])
 ```
 
 ## Automatic pagination

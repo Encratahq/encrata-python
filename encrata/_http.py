@@ -26,6 +26,26 @@ from .exceptions import (
 )
 
 
+def decode_success_response(resp: httpx.Response) -> Any:
+    """Decode a successful response body.
+
+    Empty bodies are valid for some endpoints. Non-empty non-JSON bodies are
+    surfaced as SDK errors so callers do not see raw JSONDecodeError traces.
+    """
+    if not resp.content or not resp.text.strip():
+        return {}
+    try:
+        return resp.json()
+    except ValueError as e:
+        content_type = resp.headers.get("Content-Type", "unknown")
+        preview = resp.text[:200].replace("\n", "\\n")
+        raise APIError(
+            "Invalid JSON response from Encrata API "
+            f"(status={resp.status_code}, content_type={content_type}): {preview}",
+            status_code=resp.status_code,
+        ) from e
+
+
 def to_error(resp: Any) -> Exception:
     """Map an HTTP status code to the right exception."""
     try:
@@ -129,9 +149,7 @@ class SyncHTTPMixin:
             if resp.status_code >= 400:
                 raise to_error(resp)
 
-            if not resp.content:
-                return {}
-            return resp.json()
+            return decode_success_response(resp)
 
     def _sleep_backoff(self, attempt: int, resp: httpx.Response | None) -> None:
         """Wait before the next retry: honour Retry-After, else full jitter."""
@@ -201,9 +219,7 @@ class AsyncHTTPMixin:
             if resp.status_code >= 400:
                 raise to_error(resp)
 
-            if not resp.content:
-                return {}
-            return resp.json()
+            return decode_success_response(resp)
 
     async def _sleep_backoff(self, attempt: int, resp: Any | None) -> None:
         """Wait before the next retry: honour Retry-After, else full jitter."""

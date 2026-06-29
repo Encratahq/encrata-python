@@ -13,6 +13,7 @@ from ._constants import (
 )
 from ._http import AsyncHTTPMixin
 from .exceptions import AuthenticationError
+from .resources.bulk import BulkAsyncMixin
 from .resources.contacts import ContactsAsyncMixin
 from .resources.face import FaceAsyncMixin
 from .resources.monitors import MonitorsAsyncMixin
@@ -29,6 +30,7 @@ class AsyncEncrata(
     OSINTAsyncMixin,
     WebAsyncMixin,
     FaceAsyncMixin,
+    BulkAsyncMixin,
     MonitorsAsyncMixin,
     ContactsAsyncMixin,
 ):

@@ -44,6 +44,7 @@ from .osint import (
 from .web import ExtractResult, ScrapeResult, ScreenshotResult
 from .monitors import ContactList, Monitor, MonitorRun, MonitorSnapshot
 from .face import FaceMatch, FaceSearch
+from .bulk import BulkSearchResponse
 
 __all__ = [
     # People
@@ -91,6 +92,7 @@ __all__ = [
     # Face
     "FaceMatch",
     "FaceSearch",
+    "BulkSearchResponse",
     # Web tools
     "ScrapeResult",
     "ExtractResult",

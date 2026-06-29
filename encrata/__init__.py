@@ -6,6 +6,7 @@ from .async_client import AsyncEncrata
 from .types import (
     BreachInfo,
     BreachReport,
+    BulkSearchResponse,
     CompanyInfo,
     CompanyOfficer,
     CompanyProfile,
@@ -105,6 +106,7 @@ __all__ = [
     "DarkWebResult",
     "FaceSearch",
     "FaceMatch",
+    "BulkSearchResponse",
     "ScrapeResult",
     "ExtractResult",
     "ScreenshotResult",

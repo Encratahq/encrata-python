@@ -172,3 +172,14 @@ def test_full_jitter_stays_within_ceiling(client, transport, sleeps):
     # attempt 0 ceiling = 1s, attempt 1 ceiling = 2s; full jitter -> [0, ceiling].
     assert 0.0 <= sleeps[0] <= 1.0
     assert 0.0 <= sleeps[1] <= 2.0
+
+
+def test_success_with_non_json_body_raises_api_error(client, transport):
+    transport.respond("temporary upstream response")
+
+    with pytest.raises(APIError) as exc:
+        client.validate("x@y.com")
+
+    assert exc.value.status_code == 200
+    assert "Invalid JSON response" in str(exc.value)
+    assert "temporary upstream response" in str(exc.value)
