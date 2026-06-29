@@ -43,6 +43,7 @@ from .osint import (
 )
 from .web import ExtractResult, ScrapeResult, ScreenshotResult
 from .monitors import ContactList, Monitor, MonitorRun, MonitorSnapshot
+from .face import FaceMatch, FaceSearch
 
 __all__ = [
     # People
@@ -87,6 +88,9 @@ __all__ = [
     # Dark web
     "DarkWebResult",
     "DarkWebSearch",
+    # Face
+    "FaceMatch",
+    "FaceSearch",
     # Web tools
     "ScrapeResult",
     "ExtractResult",

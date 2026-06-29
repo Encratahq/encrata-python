@@ -12,6 +12,7 @@ from ._constants import (
 from ._http import SyncHTTPMixin
 from .exceptions import AuthenticationError
 from .resources.contacts import ContactsSyncMixin
+from .resources.face import FaceSyncMixin
 from .resources.monitors import MonitorsSyncMixin
 from .resources.osint import OSINTSyncMixin
 from .resources.people import PeopleSyncMixin
@@ -25,6 +26,7 @@ class Encrata(
     PeopleSyncMixin,
     OSINTSyncMixin,
     WebSyncMixin,
+    FaceSyncMixin,
     MonitorsSyncMixin,
     ContactsSyncMixin,
 ):
