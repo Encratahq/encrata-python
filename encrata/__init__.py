@@ -56,6 +56,8 @@ from .types import (
     WorkflowStep,
     WorkflowTemplate,
     ApiKey,
+    Webhook,
+    WebhookDelivery,
 )
 from .exceptions import (
     APIConnectionError,
@@ -121,6 +123,8 @@ __all__ = [
     "WorkflowTemplate",
     "WorkflowSecret",
     "ApiKey",
+    "Webhook",
+    "WebhookDelivery",
     "ScrapeResult",
     "ExtractResult",
     "ScreenshotResult",

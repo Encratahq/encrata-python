@@ -47,6 +47,7 @@ from .face import FaceMatch, FaceSearch
 from .bulk import BulkSearchResponse
 from .workflows import Workflow, WorkflowRun, WorkflowRunStep, WorkflowSecret, WorkflowStep, WorkflowTemplate
 from .keys import ApiKey
+from .webhooks import Webhook, WebhookDelivery
 
 __all__ = [
     # People
@@ -102,6 +103,8 @@ __all__ = [
     "WorkflowTemplate",
     "WorkflowSecret",
     "ApiKey",
+    "Webhook",
+    "WebhookDelivery",
     # Web tools
     "ScrapeResult",
     "ExtractResult",

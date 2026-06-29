@@ -20,6 +20,7 @@ from .resources.people import PeopleSyncMixin
 from .resources.web import WebSyncMixin
 from .resources.workflows import WorkflowsSyncMixin
 from .resources.keys import KeysSyncMixin
+from .resources.webhooks import WebhooksSyncMixin
 
 __all__ = ["Encrata"]
 
@@ -35,6 +36,7 @@ class Encrata(
     ContactsSyncMixin,
     WorkflowsSyncMixin,
     KeysSyncMixin,
+    WebhooksSyncMixin,
 ):
     """Encrata API client.
 

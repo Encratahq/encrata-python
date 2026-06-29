@@ -22,6 +22,7 @@ from .resources.people import PeopleAsyncMixin
 from .resources.web import WebAsyncMixin
 from .resources.workflows import WorkflowsAsyncMixin
 from .resources.keys import KeysAsyncMixin
+from .resources.webhooks import WebhooksAsyncMixin
 
 __all__ = ["AsyncEncrata"]
 
@@ -37,6 +38,7 @@ class AsyncEncrata(
     ContactsAsyncMixin,
     WorkflowsAsyncMixin,
     KeysAsyncMixin,
+    WebhooksAsyncMixin,
 ):
     """Async Encrata API client (httpx-based).
 
