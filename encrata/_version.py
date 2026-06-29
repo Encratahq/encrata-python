@@ -6,4 +6,4 @@ imports it from here, so the value can never drift between the package metadata
 and what the SDK reports in its ``User-Agent``.
 """
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"

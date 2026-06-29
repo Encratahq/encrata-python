@@ -4,6 +4,29 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-06-29
+
+### Added
+- OSINT endpoints on both clients: `ip()`, `phone_lookup()`, `domain_search()`,
+  `company_search()`, `google_search()` (Google dork), and `darkweb_search()`
+  with pagination.
+- Web tooling: `scrape()`, `extract()` (selector and markdown modes), and
+  screenshot capture, with auto-refund handling for failed scrapes.
+- `face_search()` for reverse-image / face matching.
+- Bulk operations including `bulk_lookup()` and `bulk_google_search()`.
+- Contact list management (`list_contact_lists()`, `create_contact_list()`,
+  `get_contact_list()`, and related helpers).
+- Workflows: list, run, and inspect workflows, runs, templates, and secrets.
+- API key management (`list_keys()` and related helpers).
+- Webhook management (`list_webhooks()`, `create_webhook()`, and delivery
+  inspection).
+- New typed response dataclasses for all of the above.
+
+### Changed
+- The client is now composed from per-domain resource mixins and the response
+  types are split into a `types` package, replacing the single monolithic
+  client/types modules.
+
 ## [0.4.0] - 2026-06-27
 
 ### Added
@@ -56,6 +79,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Typed exception hierarchy (`AuthenticationError`, `InsufficientCreditsError`,
   `InvalidRequestError`, `RateLimitError`, `APIConnectionError`, `APIError`).
 
+[0.5.0]: https://github.com/Encratahq/encrata-python/releases/tag/v0.5.0
 [0.4.0]: https://github.com/Encratahq/encrata-python/releases/tag/v0.4.0
 [0.3.0]: https://github.com/Encratahq/encrata-python/releases/tag/v0.3.0
 [0.2.0]: https://github.com/Encratahq/encrata-python/releases/tag/v0.2.0
