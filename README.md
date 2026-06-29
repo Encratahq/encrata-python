@@ -90,6 +90,54 @@ print(report.services)      # ["Adobe", "LinkedIn", "Dropbox"]
 print(report.exposed_data)  # ["email", "password", "username"]
 ```
 
+## OSINT Lookups
+
+Enrich IPs, phone numbers, domains, and companies. Each costs **1 credit**.
+
+### IP intelligence
+
+```python
+ip = client.ip("8.8.8.8")
+
+print(ip.location.country)  # "United States"
+print(ip.asn.name)          # "GOOGLE"
+print(ip.threat.malicious)  # False
+```
+
+### Phone lookup
+
+```python
+phone = client.phone_lookup("+14155552671")
+
+print(phone.carrier.name)        # "T-Mobile"
+print(phone.country.name)        # "United States"
+print(phone.validation.is_voip)  # False
+```
+
+### Domain search
+
+```python
+domain = client.domain_search("tesla.com")
+
+print(domain.whois.registrar)      # "MarkMonitor Inc."
+print(domain.ssl.issuer)           # "DigiCert Inc"
+print(domain.threat_intel.malicious)  # False
+```
+
+### Company search
+
+```python
+company = client.company_search("Tesla")
+
+print(company.profile.name)            # "Tesla, Inc."
+print(company.profile.ticker)          # "TSLA"
+print(company.profile.employee_count)  # 140000
+for person in company.results:
+    print(person.name, person.role, person.email)
+```
+
+Costs 1 credit per result returned.
+
 ## Monitoring
 
 Set up monitors to track changes in email intelligence over time. When a person changes jobs, gets a new title, or appears in a breach — you'll know.

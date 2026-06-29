@@ -19,3 +19,4 @@ htmlcov/
 # Local scratch / manual test scripts
 test_sdk.py
 try.py
+try_phone_domain.py

@@ -27,10 +27,14 @@ from .exceptions import (
 from .types import (
     BreachReport,
     ContactList,
+    CompanyInfo,
+    DomainInfo,
+    IPInfo,
     Monitor,
     MonitorRun,
     MonitorSnapshot,
     Person,
+    PhoneInfo,
     Validation,
 )
 
@@ -124,6 +128,26 @@ class AsyncEncrata:
         """Check data breach exposure for an email (free — no credits used)."""
         data = await self._post("/api/agent/breaches", {"email": email})
         return BreachReport.from_dict(data)
+
+    async def ip(self, ip: str) -> IPInfo:
+        """Look up geolocation, ASN, company, and threat data for an IP address."""
+        data = await self._post("/api/agent/ip", {"ip": ip})
+        return IPInfo.from_dict(data)
+
+    async def phone_lookup(self, query: str) -> PhoneInfo:
+        """Look up carrier, format, country, validation, risk, and breach data for a phone number."""
+        data = await self._post("/api/agent/phone", {"query": query})
+        return PhoneInfo.from_dict(data)
+
+    async def domain_search(self, query: str) -> DomainInfo:
+        """Look up WHOIS, DNS, SSL, threat intel, and recon data for a domain."""
+        data = await self._post("/api/agent/domain", {"query": query})
+        return DomainInfo.from_dict(data)
+
+    async def company_search(self, query: str) -> CompanyInfo:
+        """Find people and a unified company profile by company name."""
+        data = await self._post("/api/agent/company", {"query": query})
+        return CompanyInfo.from_dict(data)
 
     async def lookup_many(
         self,
