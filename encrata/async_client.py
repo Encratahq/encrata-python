@@ -20,6 +20,8 @@ from .resources.monitors import MonitorsAsyncMixin
 from .resources.osint import OSINTAsyncMixin
 from .resources.people import PeopleAsyncMixin
 from .resources.web import WebAsyncMixin
+from .resources.workflows import WorkflowsAsyncMixin
+from .resources.keys import KeysAsyncMixin
 
 __all__ = ["AsyncEncrata"]
 
@@ -33,6 +35,8 @@ class AsyncEncrata(
     BulkAsyncMixin,
     MonitorsAsyncMixin,
     ContactsAsyncMixin,
+    WorkflowsAsyncMixin,
+    KeysAsyncMixin,
 ):
     """Async Encrata API client (httpx-based).
 

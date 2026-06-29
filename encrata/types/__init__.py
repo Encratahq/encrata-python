@@ -45,6 +45,8 @@ from .web import ExtractResult, ScrapeResult, ScreenshotResult
 from .monitors import ContactList, Monitor, MonitorRun, MonitorSnapshot
 from .face import FaceMatch, FaceSearch
 from .bulk import BulkSearchResponse
+from .workflows import Workflow, WorkflowRun, WorkflowRunStep, WorkflowSecret, WorkflowStep, WorkflowTemplate
+from .keys import ApiKey
 
 __all__ = [
     # People
@@ -93,6 +95,13 @@ __all__ = [
     "FaceMatch",
     "FaceSearch",
     "BulkSearchResponse",
+    "Workflow",
+    "WorkflowStep",
+    "WorkflowRun",
+    "WorkflowRunStep",
+    "WorkflowTemplate",
+    "WorkflowSecret",
+    "ApiKey",
     # Web tools
     "ScrapeResult",
     "ExtractResult",

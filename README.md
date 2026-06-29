@@ -326,31 +326,41 @@ you — see [Automatic pagination](#automatic-pagination) below.
 
 ## Contact Lists
 
-Manage reusable email lists that can be used as data sources for monitors.
+Manage reusable target lists that can be used as data sources for monitors.
+Lists hold one type of target: `email`, `phone`, `domain`, `ip`, `company`, or `darkweb`.
 
 ### Create a contact list
 
 ```python
+# Email list (the default type)
 contact_list = client.create_contact_list(
     "Engineering Team",
     emails=["satya@microsoft.com", "sundar@google.com"],
 )
-print(contact_list.id)
+print(contact_list.id, contact_list.list_type)
+
+# A non-email list — pass `type` and use `targets`
+domains = client.create_contact_list(
+    "Competitor Domains",
+    type="domain",
+    targets=["competitor1.com", "competitor2.io"],
+)
 ```
 
 ### Manage list emails
 
 ```python
-# List all contact lists
+# List all contact lists (optionally filter by type)
 lists = client.list_contact_lists()
+domain_lists = client.list_contact_lists(type="domain")
 
-# Add emails
+# Add targets
 client.add_contact_list_emails(contact_list.id, ["tim@apple.com"])
 
-# List emails in a list
+# List targets in a list
 emails = client.list_contact_list_emails(contact_list.id)
 
-# Remove emails
+# Remove targets
 client.delete_contact_list_emails(contact_list.id, ["sundar@google.com"])
 
 # Delete the list
@@ -361,6 +371,70 @@ client.delete_contact_list(contact_list.id)
 
 ```python
 monitor = client.create_monitor("Team Monitor", list_id=contact_list.id)
+```
+
+## Workflows
+
+Automate multi-step OSINT pipelines with triggers and steps. Workflows are
+managed on `encrata.com/api/workflows` — keep separate from the per-lookup
+endpoints above.
+
+### List, get, create, update
+
+```python
+# List workflows (paginated → (workflows, total))
+workflows, total = client.list_workflows(status="active")
+for wf in workflows:
+    print(wf.id, wf.name, wf.status)
+
+# Fetch one
+wf = client.get_workflow(workflows[0].id)
+
+# Create from steps, or clone a template
+wf = client.create_workflow(
+    "Lead enrichment",
+    trigger={"type": "webhook"},
+    steps=[
+        {"id": "step1", "type": "email_lookup", "config": {"field": "email"}},
+        {"id": "step2", "type": "company_lookup", "config": {"field": "step1.company"}},
+    ],
+)
+
+# Update (creates a new version). Returns the updated workflow;
+# if the API echoes nothing, you still get a Workflow with the id set.
+wf = client.update_workflow(wf.id, name="Renamed", status="paused")
+```
+
+### Runs, templates, and secrets
+
+```python
+runs, total = client.list_workflow_runs(workflow_id=wf.id)
+run = client.get_workflow_run(runs[0].id)
+for step in run.steps:
+    print(step.type, step.status, step.credits_used)
+
+templates = client.list_workflow_templates(category="enrichment")
+
+# Secrets — referenced in webhook steps as {{secrets.NAME}} (values never returned)
+secrets = client.list_workflow_secrets()
+client.create_workflow_secret("SLACK_WEBHOOK_URL", "https://hooks.slack.com/...")
+client.delete_workflow_secret("SLACK_WEBHOOK_URL")
+```
+
+## API keys
+
+Manage the keys for your account. The full key is only returned once, at creation.
+
+```python
+keys = client.list_keys()
+for k in keys:
+    print(k.id, k.name, k.key_preview, k.credits_used)
+
+new_key = client.create_key("Production")
+print(new_key.key)  # store this — it is never shown again
+
+client.revoke_key(new_key.id)                  # soft disable
+client.revoke_key(new_key.id, permanent=True)  # permanent delete
 ```
 
 ## Automatic pagination

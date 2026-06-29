@@ -93,14 +93,18 @@ class ContactList:
     """A contact list."""
     id: str = ""
     name: str = ""
+    list_type: str = ""
     email_count: int = 0
     created_at: str = ""
+    updated_at: str = ""
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> ContactList:
         return cls(
             id=data.get("id", ""),
             name=data.get("name", ""),
+            list_type=data.get("list_type", ""),
             email_count=data.get("email_count", 0),
             created_at=data.get("created_at", ""),
+            updated_at=data.get("updated_at", ""),
         )

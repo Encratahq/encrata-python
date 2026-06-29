@@ -18,6 +18,8 @@ from .resources.monitors import MonitorsSyncMixin
 from .resources.osint import OSINTSyncMixin
 from .resources.people import PeopleSyncMixin
 from .resources.web import WebSyncMixin
+from .resources.workflows import WorkflowsSyncMixin
+from .resources.keys import KeysSyncMixin
 
 __all__ = ["Encrata"]
 
@@ -31,6 +33,8 @@ class Encrata(
     BulkSyncMixin,
     MonitorsSyncMixin,
     ContactsSyncMixin,
+    WorkflowsSyncMixin,
+    KeysSyncMixin,
 ):
     """Encrata API client.
 

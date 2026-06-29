@@ -8,9 +8,14 @@ from ..types import ContactList
 
 
 class ContactsSyncMixin:
-    def list_contact_lists(self) -> list[ContactList]:
-        """List all contact lists."""
-        data = self._get("/api/agent/lists")
+    def list_contact_lists(self, *, type: str | None = None) -> list[ContactList]:
+        """List all contact lists, optionally filtered by ``type``.
+
+        Args:
+            type: ``"email"``, ``"phone"``, ``"domain"``, ``"ip"``, ``"company"``, or ``"darkweb"``.
+        """
+        params = {"type": type} if type else None
+        data = self._get("/api/agent/lists", params=params)
         if isinstance(data, list):
             return [ContactList.from_dict(cl) for cl in data]
         return [ContactList.from_dict(cl) for cl in data.get("lists", data)]
@@ -19,15 +24,23 @@ class ContactsSyncMixin:
         self,
         name: str,
         *,
+        type: str | None = None,
+        targets: Sequence[str] | None = None,
         emails: Sequence[str] | None = None,
     ) -> ContactList:
         """Create a new contact list.
 
         Args:
             name: List name.
-            emails: Optional initial emails to add.
+            type: Target type (default ``"email"``): ``email``, ``phone``, ``domain``, ``ip``, ``company``, ``darkweb``.
+            targets: Initial targets to add.
+            emails: Initial targets (legacy alias for ``targets``, works for all types).
         """
         body: dict[str, Any] = {"name": name}
+        if type:
+            body["type"] = type
+        if targets:
+            body["targets"] = list(targets)
         if emails:
             body["emails"] = list(emails)
         data = self._post("/api/agent/lists", body)
@@ -65,9 +78,10 @@ class ContactsSyncMixin:
 
 
 class ContactsAsyncMixin:
-    async def list_contact_lists(self) -> list[ContactList]:
-        """List all contact lists."""
-        data = await self._get("/api/agent/lists")
+    async def list_contact_lists(self, *, type: str | None = None) -> list[ContactList]:
+        """List all contact lists, optionally filtered by ``type``."""
+        params = {"type": type} if type else None
+        data = await self._get("/api/agent/lists", params=params)
         if isinstance(data, list):
             return [ContactList.from_dict(cl) for cl in data]
         return [ContactList.from_dict(cl) for cl in data.get("lists", data)]
@@ -76,10 +90,16 @@ class ContactsAsyncMixin:
         self,
         name: str,
         *,
+        type: str | None = None,
+        targets: Sequence[str] | None = None,
         emails: Sequence[str] | None = None,
     ) -> ContactList:
         """Create a new contact list."""
         body: dict[str, Any] = {"name": name}
+        if type:
+            body["type"] = type
+        if targets:
+            body["targets"] = list(targets)
         if emails:
             body["emails"] = list(emails)
         data = await self._post("/api/agent/lists", body)
