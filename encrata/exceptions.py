@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 class EncrataError(Exception):
     """Base exception for the Encrata SDK."""
 
